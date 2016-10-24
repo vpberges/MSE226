@@ -2,6 +2,8 @@ library(tibble)
 library(ggplot2)
 library(dplyr)
 
+setwd('/Users/vpberges/Documents/Stanford/Quarter7/MSE226/MSE226')
+
 rmse <- function(rr)
 {
   return (sqrt( (t(rr)%*%rr)/length(rr) ))
@@ -9,7 +11,17 @@ rmse <- function(rr)
 }
 
 
-data <-read.csv('/Users/vpberges/Documents/Stanford/Quarter7/MSE226/MSE226/CollegeScorecard_Raw_Data/MERGED2010_PP.csv')
+dict <- data <-read.csv('CollegeScorecard_Raw_Data/CollegeScorecardDataDictionary-09-12-2015.csv')
+dict <- as.data.frame(sapply(dict, tolower))
+lookup <-function(name){
+  print( dict$NAME.OF.DATA.ELEMENT[which(tolower(dict$VARIABLE.NAME) == tolower(name))])
+}
+data <-read.csv('CollegeScorecard_Raw_Data/MERGED2010_PP.csv')
+na_fraction <- function(name){
+  print(sum(is.na(data[[name]])) / length(data[[name]])) 
+}
+
+
 
 data[data=='PrivacySuppressed']<-NA
 data[data=='NULL']<-NA
