@@ -1,5 +1,6 @@
 library(tibble)
 library(ggplot2)
+library(reshape2)
 library(dplyr)
 
 setwd('/Users/vpberges/Documents/Stanford/Quarter7/MSE226/MSE226')
@@ -83,38 +84,37 @@ train <- d[train_ind, ]
 test <- d[-train_ind, ]
 
 
-
-### Processing
-reg = lm(mn_earn_wne_p7 ~ . , data = train)
-
-predict(object = reg, newdata = test)
-
 # Correlation
 for (i in names(train)){
   if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
-    print(i)
-    print(cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete"))
+    print(paste(i,"       ",cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete")))
   }
 }
 
 cormap = matrix(nrow = length(values_to_keep), ncol = length(values_to_keep))
 for (i in 1:length(values_to_keep)){
   for (j in 1:length(values_to_keep)){
-    if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
-      if ((j!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
-
-          cormap[i,j] = tryCatch(
-  {cor(train[[values_to_keep[i]]], train[[values_to_keep[j]]], use = "na.or.complete")},
-                                {return(NA)},{return{NA}} ) 
+          cormap[i,j] = tryCatch( 
+  cor(train[[values_to_keep[i]]], train[[values_to_keep[j]]], use = "na.or.complete"),
+            warning = function(w){return(0)},error = function(e){return(0)} ) 
           #print(cor(train[[i]], train[[j]], use = "na.or.complete"))
-        }
-      }
     }
 }
 
 
-ggpairs(train[c("mn_earn_wne_p7","C150_4")])
 
+q <- qplot(x=Var1, y=Var2, 
+  data=melt(cor(train[ , sapply(train, is.numeric)], use = "na.or.complete")),
+  fill=value, geom="tile")
+
+q + theme(axis.text.x = element_text(angle = 90))
+
+
+
+### Processing
+reg = lm(mn_earn_wne_p7 ~ . , data = train)
+
+predict(object = reg, newdata = test)
 
 
 
