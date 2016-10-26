@@ -2,6 +2,7 @@ library(tibble)
 library(ggplot2)
 library(reshape2)
 library(dplyr)
+library(GGally)
 
 setwd('/Users/vpberges/Documents/Stanford/Quarter7/MSE226/MSE226')
 
@@ -85,10 +86,18 @@ test <- d[-train_ind, ]
 
 
 # Correlation
+values_correlated= c('mn_earn_wne_p7')
 for (i in names(train)){
   if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
-    print(paste(i,"       ",cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete")))
-  }
+    if ((cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete") > 0.4 )|(cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete")< -0.4)){
+      print(paste(i,"       ",cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete"), '       ***'))
+      values_correlated = c(values_correlated,i)
+    } 
+    else{
+      print(paste(i,"       ",cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete")))
+      
+    }
+   }
 }
 
 cormap = matrix(nrow = length(values_to_keep), ncol = length(values_to_keep))
@@ -112,9 +121,9 @@ q + theme(axis.text.x = element_text(angle = 90))
 
 
 ### Processing
-reg = lm(mn_earn_wne_p7 ~ . , data = train)
+#reg = lm(mn_earn_wne_p7 ~ . , data = train)
 
-predict(object = reg, newdata = test)
+#predict(object = reg, newdata = test)
 
 
 
