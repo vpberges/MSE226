@@ -14,11 +14,11 @@ rmse <- function(rr)
 dict <- data <-read.csv('CollegeScorecard_Raw_Data/CollegeScorecardDataDictionary-09-12-2015.csv')
 dict <- as.data.frame(sapply(dict, tolower))
 lookup <-function(name){
-  print( dict$NAME.OF.DATA.ELEMENT[which(tolower(dict$VARIABLE.NAME) == tolower(name))])
+  return (toString( dict$NAME.OF.DATA.ELEMENT[which(tolower(dict$VARIABLE.NAME) == tolower(name))]))
 }
 data <-read.csv('CollegeScorecard_Raw_Data/MERGED2010_PP.csv')
 na_fraction <- function(name){
-  print(sum(is.na(data[[name]])) / length(data[[name]])) 
+  return(sum(is.na(data[[name]])) / length(data[[name]])) 
 }
 
 
@@ -55,13 +55,15 @@ for (i in names(d)) {
   }
 }
 
-values_to_keep = c()
+values_to_keep = c('mn_earn_wne_p7')
 values_to_delete = c()
+vince = read.csv('Vince_var.txt')$VARIABLE.NAME
 for(i in names(d)){
-  if (sum(is.na(d[[i]])) / 5967 > 0.20 ){ #0.1 ?
-    print(i)
-    print(sum(is.na(d[[i]])))
-    print(sum(is.na(d[[i]])) / 5967)
+  #if (sum(is.na(d[[i]])) / 5967 > 0.20 ){ #0.1 ?
+  if (!(i %in% vince )){ 
+    #print(i)
+    #print(sum(is.na(d[[i]])))
+    #print(sum(is.na(d[[i]])) / 5967)
     values_to_delete = c(values_to_delete,i)
   }
   else {
@@ -83,20 +85,39 @@ test <- d[-train_ind, ]
 
 
 ### Processing
-reg = lm(mn_earn_wne_p7 ~ .,data = train)
+reg = lm(mn_earn_wne_p7 ~ . , data = train)
 
-predict(object = reg,newdata = test)
+predict(object = reg, newdata = test)
 
-
+# Correlation
 for (i in names(train)){
-  if (i!= "INSTNM"){
+  if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
     print(i)
-    print(cor(d$mn_earn_wne_p7,d[[i]],use = "na.or.complete"))
+    print(cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete"))
   }
 }
 
+cormap = matrix(nrow = length(values_to_keep), ncol = length(values_to_keep))
+for (i in 1:length(values_to_keep)){
+  for (j in 1:length(values_to_keep)){
+    if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
+      if ((j!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
+
+          cormap[i,j] = tryCatch(
+  {cor(train[[values_to_keep[i]]], train[[values_to_keep[j]]], use = "na.or.complete")},
+                                {return(NA)},{return{NA}} ) 
+          #print(cor(train[[i]], train[[j]], use = "na.or.complete"))
+        }
+      }
+    }
+}
 
 
 ggpairs(train[c("mn_earn_wne_p7","C150_4")])
+
+
+
+
+
 
 
