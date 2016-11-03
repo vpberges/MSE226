@@ -119,11 +119,13 @@ q <- qplot(x=Var1, y=Var2,
 q + theme(axis.text.x = element_text(angle = 90))
 
 
+corrplots <- corrplot.mixed((cor(train[values_correlated][ , sapply(train[values_correlated], is.numeric)], use = "na.or.complete")))
+
 
 ### Processing
-#reg = lm(mn_earn_wne_p7 ~ . , data = train)
+reg = lm(mn_earn_wne_p7 ~ . , data = train[values_correlated])
 
-#predict(object = reg, newdata = test)
+predict(object = reg, newdata = test[values_correlated])
 
 
 
