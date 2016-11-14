@@ -4,8 +4,8 @@ library(reshape2)
 library(dplyr)
 library(GGally)
 rm(list=ls())
-setwd('/Users/cnajmabadi/Documents/Autumn 2016/MSE 226/Project/MSE226')
-
+#setwd('/Users/cnajmabadi/Documents/Autumn 2016/MSE 226/Project/MSE226')
+#setwd('Users/vpberges/Documents/Stanford/Quarter7/MSE226/MSE226')
 rmse <- function(rr)
 {
   return (sqrt( (t(rr)%*%rr)/length(rr) ))
@@ -30,6 +30,8 @@ data[data=='NULL']<-NA
 
 d = data %>% filter(!is.na(mn_earn_wne_p7) )
 d[["mn_earn_wne_p7"]] <- as.numeric(as.character(d[["mn_earn_wne_p7"]]))
+
+
 
 d = d[ , -which(names(d) %in% 
                 c("mn_earn_wne_p9",
@@ -56,6 +58,8 @@ for (i in names(d)) {
     d[[i]] <- as.numeric(as.character(d[[i]]))
   }
 }
+
+d$CONTROL = factor(d$CONTROL)
 
 values_to_keep = c('mn_earn_wne_p7')
 values_to_delete = c()
@@ -88,7 +92,7 @@ test <- d[-train_ind, ]
 # Correlation
 values_correlated= c()
 for (i in names(train)){
-  if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR") ){
+  if ((i!= "INSTNM") &(i!= "CITY")&(i!= "STABBR")&(i!= "CONTROL") ){
     if ((cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete") > 0.4 )|(cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete")< -0.4)){
       print(paste(i,"       ",cor(d$mn_earn_wne_p7, d[[i]], use = "na.or.complete"), '       ***'))
       values_correlated = c(values_correlated,i)
@@ -121,11 +125,43 @@ q + theme(axis.text.x = element_text(angle = 90))
 
 
 ### Processing
+#Linear First order
 reg = lm(mn_earn_wne_p7 ~ . , data = train[values_correlated])
-
 pred <- predict(object = reg, newdata = test[values_correlated])
-
 rmse(pred-test$mn_earn_wne_p7)
+#Linear second order
+reg = lm(mn_earn_wne_p7 ~ .:. , data = train[values_correlated])
+pred <- predict(object = reg, newdata = test[values_correlated])
+rmse(pred-test$mn_earn_wne_p7)
+#Linear third order (overfit)
+reg = lm(mn_earn_wne_p7 ~ .*.*. , data = train[values_correlated])
+pred <- predict(object = reg, newdata = test[values_correlated])
+rmse(pred-test$mn_earn_wne_p7)
+
+
+
+# Random Forest 
+library(randomForest)
+fit <- randomForest( mn_earn_wne_p7 ~ .,
+                     data=train[names(train)[which(tolower(names(train)) != 'instnm')]], 
+                     ntree=20)
+
+forest.pred = predict(fit, test)
+rmse(forest.pred-test$mn_earn_wne_p7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 library(corrplot)
 library(glmnet)
@@ -150,3 +186,8 @@ lasso.pred=predict (lasso.mod ,s=bestlam ,newx=x[test ,])
 out=glmnet (x,y,alpha =1, lambda =grid)
 lasso.coef = predict(out ,type ="coefficients", s = bestlam)#[1:20 ,]
 lasso.coef
+
+rmse(lasso.pred-y.test)
+
+
+
