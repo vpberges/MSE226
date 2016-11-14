@@ -119,7 +119,7 @@ q <- qplot(x=Var1, y=Var2,
 q + theme(axis.text.x = element_text(angle = 90))
 
 
-
+    
 ### Processing
 reg = lm(mn_earn_wne_p7 ~ . , data = train[values_correlated])
 
@@ -131,22 +131,24 @@ library(corrplot)
 library(glmnet)
 #corrplots <- corrplot.mixed((cor(train[values_correlated][ , sapply(train[values_correlated], is.numeric)], use = "na.or.complete")))
 ##New
-x=model.matrix(mn_earn_wne_p7~. - INSTNM ,d)
+x = model.matrix(mn_earn_wne_p7~. - INSTNM ,d)
 #x =na.omit(x )
-y=d$mn_earn_wne_p7
-train=sample (1: nrow(x), nrow(x)/2)
-test=(- train )
-y.test=y[test]
-grid = 10^ seq (10,-2, length =100)
-ridge.mod =glmnet (x,y,alpha =0, lambda =grid)
-lasso.mod =glmnet (x[train ,],y[train],alpha =1, lambda =grid)
+y = d$mn_earn_wne_p7
+train = sample (1: nrow(x), nrow(x)/2)
+test = (- train )
+y.test = y[test]
+grid = 10^seq (10, -2, length = 100)
+#ridge.mod =glmnet (x,y,alpha =0, lambda =grid)
+lasso.mod =glmnet(x[train ,],y[train],alpha =1, lambda =grid)
 plot(lasso.mod)
-
 set.seed (1)
-cv.out =cv.glmnet (x[train ,],y[train],alpha = 1)
+cv.out = cv.glmnet(x[train ,],y[train],alpha = 1)
 plot(cv.out)
-bestlam =cv.out$lambda.min
-lasso.pred=predict (lasso.mod ,s=bestlam ,newx=x[test ,])
-out=glmnet (x,y,alpha =1, lambda =grid)
+bestlam = cv.out$lambda.min
+lasso.pred = predict (lasso.mod , s = bestlam, newx = x[test ,])
+lasso.harvard = predict(lasso.mod , s = bestlam, newx = d[1565,])
+RMSE = sqrt(mean((lasso.pred - y.test)^2))
+out = glmnet(x, y, alpha = 1, lambda = grid)
 lasso.coef = predict(out ,type ="coefficients", s = bestlam)#[1:20 ,]
 lasso.coef
+typeof(d[1,2])
