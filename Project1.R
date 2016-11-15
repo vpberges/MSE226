@@ -167,7 +167,7 @@ library(corrplot)
 library(glmnet)
 #corrplots <- corrplot.mixed((cor(train[values_correlated][ , sapply(train[values_correlated], is.numeric)], use = "na.or.complete")))
 ##New
-x = model.matrix(mn_earn_wne_p7~. - INSTNM - CONTROL,d)
+x = model.matrix(mn_earn_wne_p7~. - INSTNM,d)
 #x =na.omit(x )
 y = d$mn_earn_wne_p7
 train = sample (1: nrow(x), nrow(x)/2)
@@ -182,7 +182,7 @@ cv.out = cv.glmnet(x[train ,],y[train],alpha = 1)
 plot(cv.out)
 bestlam = cv.out$lambda.min
 lasso.pred = predict (lasso.mod , s = bestlam, newx = x[test ,])
-lasso.harvard = predict(lasso.mod , s = bestlam, newx = d[1565,])
+#lasso.harvard = predict(lasso.mod , s = bestlam, newx = d[1565,])
 RMSE = sqrt(mean((lasso.pred - y.test)^2))
 out = glmnet(x, y, alpha = 1, lambda = grid)
 lasso.coef = predict(out ,type ="coefficients", s = bestlam)#[1:20 ,]
