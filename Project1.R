@@ -167,7 +167,7 @@ library(corrplot)
 library(glmnet)
 #corrplots <- corrplot.mixed((cor(train[values_correlated][ , sapply(train[values_correlated], is.numeric)], use = "na.or.complete")))
 ##New
-x = model.matrix(mn_earn_wne_p7~. - INSTNM ,d)
+x = model.matrix(mn_earn_wne_p7~. - INSTNM - CONTROL,d)
 #x =na.omit(x )
 y = d$mn_earn_wne_p7
 train = sample (1: nrow(x), nrow(x)/2)
