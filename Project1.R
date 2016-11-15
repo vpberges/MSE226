@@ -84,7 +84,7 @@ d = d[values_to_keep]
 d[is.na(d)]<-0
 
 ####Split
-train_ind <- sample(seq_len(nrow(d)), size = 5000)
+train_ind <- sample(seq_len(nrow(d)), size = floor(nrow(d)*0.6))
 train <- d[train_ind, ]
 test <- d[-train_ind, ]
 
@@ -152,40 +152,28 @@ rmse(forest.pred-test$mn_earn_wne_p7)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-library(corrplot)
-library(glmnet)
-#corrplots <- corrplot.mixed((cor(train[values_correlated][ , sapply(train[values_correlated], is.numeric)], use = "na.or.complete")))
 ##New
-x = model.matrix(mn_earn_wne_p7~. - INSTNM,d)
+x = model.matrix(mn_earn_wne_p7~. - INSTNM ,d)
 #x =na.omit(x )
 y = d$mn_earn_wne_p7
-train = sample (1: nrow(x), nrow(x)/2)
-test = (- train )
-y.test = y[test]
+#train = sample (1: nrow(x), nrow(x)/2)
+#test = (- train )
+y.test = y[-train_ind]
 grid = 10^seq (10, -2, length = 100)
 #ridge.mod =glmnet (x,y,alpha =0, lambda =grid)
-lasso.mod =glmnet(x[train ,],y[train],alpha =1, lambda =grid)
+lasso.mod =glmnet(x[train_ind,],y[train_ind],alpha =1, lambda =grid)
 plot(lasso.mod)
 set.seed (1)
-cv.out = cv.glmnet(x[train ,],y[train],alpha = 1)
+cv.out = cv.glmnet(x[train_ind ,],y[train_ind],alpha = 1)
 plot(cv.out)
 bestlam = cv.out$lambda.min
-lasso.pred = predict (lasso.mod , s = bestlam, newx = x[test ,])
+lasso.pred = predict (lasso.mod , s = bestlam, newx = x[-train_ind ,])
 #lasso.harvard = predict(lasso.mod , s = bestlam, newx = d[1565,])
-RMSE = sqrt(mean((lasso.pred - y.test)^2))
+RMSE_lasso = sqrt(mean((lasso.pred - y.test)^2))
 out = glmnet(x, y, alpha = 1, lambda = grid)
 lasso.coef = predict(out ,type ="coefficients", s = bestlam)#[1:20 ,]
 lasso.coef
-rmse(lasso.pred-y.test)
+
+
+
 
